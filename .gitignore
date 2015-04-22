@@ -28,3 +28,4 @@ node_modules
 
 # Ignore the config file as it has secrets in it
 config.yml
+s3-website/public/config.js
