@@ -1,0 +1,12 @@
+# Example configuration for Lambda Chat
+
+# The AWS region to do everything in
+region: us-east-1
+
+# The name of the S3 bucket to use for the website
+s3_bucket: lambda-chat
+
+# The Amazon Application Client ID
+# Visit: http://login.amazon.com/manageApps
+amazon_app_client_id: TODO
+
