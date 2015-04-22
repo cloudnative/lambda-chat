@@ -1,12 +1,19 @@
 # Example configuration for Lambda Chat
+# Copy this file to `config.yml` and then set the values appropriately
 
 # The AWS region to do everything in
 region: us-east-1
 
 # The name of the S3 bucket to use for the website
+# This must be unique across all AWS accounts
 s3_bucket: lambda-chat
 
-# The Amazon Application Client ID
-# Visit: http://login.amazon.com/manageApps
-amazon_app_client_id: TODO
+# The Google OAuth Client ID
+# Visit: https://console.developers.google.com/project
+# To create a project, enable the Google+ API, and create an ID
+# Set the Javascript Origin to the S3 bucket URL
+google_oauth_client_id: TODO
 
+# The ARN of the IAM role the website will assume to be able to send messages
+# using SNS
+website_iam_role_arn: arn:aws:iam::TODO
