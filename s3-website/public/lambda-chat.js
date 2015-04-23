@@ -1,4 +1,19 @@
 var web_identity_token = null;
+var sns = null;
+
+function setStateSignedOut() {
+    // Toggle state to signed out
+    $('#signout-button').addClass('hidden');
+    $('#signed-out').show();
+    $('#signed-in').hide();
+}
+
+function setStateSignedIn() {
+    // Toggle state to signed in
+    $('#signout-button').removeClass('hidden');
+    $('#signed-out').hide();
+    $('#signed-in').show();
+}
 
 function showSigninButton() {
     var options = {
@@ -55,6 +70,12 @@ function signinCallback(authResult) {
     console.log('signinCallback() END');
 }
 
+function signOut() {
+    gapi.auth.signOut();
+
+    setStateSignedOut();
+}
+
 
 function getAwsCredentials() {
     var params = {
@@ -65,8 +86,15 @@ function getAwsCredentials() {
     console.log('Setting AWS credentials')
     var sts = new AWS.STS();
     sts.assumeRoleWithWebIdentity(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+        if (err) {
+            // an error occurred
+            console.log(err, err.stack);
+        } else {
+            // successful response
+            console.log(data);
+            AWS.config.credentials = data.Credentials;
+            sns = new AWS.SNS();
+        }
     });
 }
 
@@ -78,27 +106,41 @@ function getUserProfile() {
     });
 }
 
-function setStateSignedOut() {
-    // Toggle state to signed out
-    $('#signout-button').addClass('hidden');
-    $('#signed-out').show();
-    $('#signed-in').hide();
-}
+function sendMessage(input) {
+    message = input.val();
+    if (message.length > 0) {
+        var payload = {
+            name: 'PAS',
+            message: message,
+        }
 
-function setStateSignedIn() {
-    // Toggle state to signed in
-    $('#signout-button').removeClass('hidden');
-    $('#signed-out').hide();
-    $('#signed-in').show();
-}
+        var params = {
+            Message: payload,
+            // MessageAttributes: {
+            //     someKey: {
+            //         DataType: 'STRING_VALUE', /* required */
+            //         BinaryValue: new Buffer('...') || 'STRING_VALUE',
+            //         StringValue: 'STRING_VALUE'
+            //     },
+            //     /* anotherKey: ... */
+            // },
+            // MessageStructure: 'json',
+            TargetArn: sns_topic_arn
+        };
 
-function signOut() {
-    console.log('signOut() START');
-    gapi.auth.signOut();
+        sns.publish(params, function(err, data) {
+            if (err) {
+                // an error occurred
+                console.log(err, err.stack);
+            } else {
+                // successful response
+                console.log(data);
+            }
+        });
+    }
 
-    setStateSignedOut();
-
-    console.log('signOut() END');
+    // Reset the input box for the next message
+    input.val('');
 }
 
 
@@ -112,4 +154,10 @@ $(function() {
 
     // Show the sign in button
     showSigninButton();
+
+    $('#chat-message').keypress(function(e) {
+        if (e.which == 13) {
+            sendMessage($('#chat-message'));
+        }
+    });
 });

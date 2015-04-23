@@ -17,3 +17,5 @@ google_oauth_client_id: TODO
 # The ARN of the IAM role the website will assume to be able to send messages
 # using SNS
 website_iam_role_arn: arn:aws:iam::TODO
+
+sns_topic_arn: ''
