@@ -30,7 +30,7 @@ echo "Setting the S3 bucket up to host a static website..."
 aws s3 website  --region ${region} s3://${s3_bucket}/ --index-document 'index.html' --error-document 'error.html'
 
 echo "Add an S3 bucket policy that allows public read access to the website..."
-cat > s3-policy.json <<EOF
+cat > ../tmp/s3-policy.json <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -45,8 +45,7 @@ cat > s3-policy.json <<EOF
   ]
 }
 EOF
-aws s3api put-bucket-policy --bucket ${s3_bucket} --policy file://s3-policy.json
-rm s3-policy.json
+aws s3api put-bucket-policy --bucket ${s3_bucket} --policy file://../tmp/s3-policy.json
 
 echo "Upload the website files to S3..."
 aws s3 sync --region ${region} public/ s3://${s3_bucket}/
@@ -54,4 +53,6 @@ aws s3 sync --region ${region} public/ s3://${s3_bucket}/
 echo "-- DONE --"
 
 echo "The website is now available at: http://${s3_bucket}.s3-website-${region}.amazonaws.com"
+echo "If you have not already, please edit the config.yml file, and then run ./update.sh"
+
 
