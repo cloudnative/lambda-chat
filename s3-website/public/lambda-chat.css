@@ -30,4 +30,6 @@ body > .container {
   margin: 20px 0;
 }
 
-
+.chatbox > .panel-footer > .form > .form-group {
+  margin-bottom: 0px;
+}
