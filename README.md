@@ -12,7 +12,7 @@ Please don't send a million messages through here - it does cost us money and we
 ## How it works
 
 
-<pre style="line-height: normal;">    ◎ ◎
+<pre>    ◎ ◎
      ◡
 
      │(1)
@@ -60,7 +60,8 @@ Please don't send a million messages through here - it does cost us money and we
               ┗━━━━━━━━━━━━━━━━━━┛
 
 
-Created with Monodraw</pre>
+Created with Monodraw
+</pre>
 
 1.  The user opens their browser and go to the website which is hosted entirely on S3
 2.  The user signs in with their Google account and gets back an `id_token`
@@ -97,7 +98,7 @@ To be able to use AWS Web Identity Federation, you will need to create a new Goo
 
 1.  Go to: https://console.developers.google.com/project
 1.  Create a new project
-1.  Enable *Google+ API* 
+1.  Enable **Google+ API**
 1.  Create OAuth 2 credentials. Leave the Javascript Origin empty for now
 1.  Edit `config.yml` and set `google_oauth_client_id` to your Client ID
 
@@ -125,7 +126,7 @@ If you are happy with that, the script can also launch the CloudFormation Stack.
 
     ./resources.py launch --region=us-east-1
 
-The script returns quickly because it is now up to CloudFormation to bring up the AWS resources. Login to the AWS Web Console and go to the CloudFormation section in that region. Select the `Lambda-Chat` stack, then click on the *Events* tab to see the progress and check for errors.
+The script returns quickly because it is now up to CloudFormation to bring up the AWS resources. Login to the AWS Web Console and go to the CloudFormation section in that region. Select the `Lambda-Chat` stack, then click on the **Events** tab to see the progress and check for errors.
 
 Once the stack is complete, run:
 
@@ -180,14 +181,8 @@ TODO @garnaat using kappa
 
 ## Reading, resources and other stuff
 
- -  AWS Web Identity Federation playground
+ -  [AWS Web Identity Federation playground](https://web-identity-federation-playground.s3.amazonaws.com/index.html)
+ -  [Building Dynamic Dashboards Using Lambda and DynamoDB Streams: Part 1](https://medium.com/aws-activate-startup-blog/building-dynamic-dashboards-using-lambda-and-dynamodb-streams-part-1-217e2318ae17)
+ -  [Kappa](https://github.com/garnaat/kappa)
+ -  [Troposphere](https://github.com/cloudtools/troposphere)
 
-        https://web-identity-federation-playground.s3.amazonaws.com/index.html
-
- -  Building Dynamic Dashboards Using Lambda and DynamoDB Streams: Part 1 
-
-        https://medium.com/aws-activate-startup-blog/building-dynamic-dashboards-using-lambda-and-dynamodb-streams-part-1-217e2318ae17
-
- -  Troposphere
-
-        https://github.com/cloudtools/troposphere
