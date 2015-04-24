@@ -1,6 +1,12 @@
 # Example configuration for Lambda Chat
 # Copy this file to `config.yml` and then set the values appropriately
 
+# The Google OAuth Client ID
+# Visit: https://console.developers.google.com/project
+# To create a project, enable the Google+ API, and create an ID
+# Set the Javascript Origin to the S3 bucket URL
+google_oauth_client_id: TODO
+
 # The AWS region to do everything in
 region: us-east-1
 
@@ -10,12 +16,6 @@ s3_bucket: lambda-chat
 
 # The S3 object key for the chat data
 data_key: data.json
-
-# The Google OAuth Client ID
-# Visit: https://console.developers.google.com/project
-# To create a project, enable the Google+ API, and create an ID
-# Set the Javascript Origin to the S3 bucket URL
-google_oauth_client_id: TODO
 
 # The ARN of the IAM role the website will assume to be able to send messages
 # using SNS

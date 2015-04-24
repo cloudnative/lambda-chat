@@ -42,10 +42,11 @@ from docopt import docopt
 import yaml
 from boto import cloudformation
 from troposphere import Template, Parameter, Output
-from troposphere import GetAtt, Ref
+from troposphere import GetAtt, Ref, Join
 import troposphere.iam as iam
 import troposphere.sns as sns
-from awacs.aws import Action, Allow, Policy, Statement, Principal, Condition, StringEquals
+import troposphere.s3 as s3
+from awacs.aws import Action, Allow, Policy, Statement, Principal, Condition, StringEquals, AWSPrincipal
 
 
 def default_config():
@@ -96,6 +97,7 @@ def cf_params():
     assert_config_loaded()
     return [
         ('GoogleOAuthClientID', config['google_oauth_client_id']),
+        ('WebsiteS3BucketName', config['s3_bucket']),
     ]
 
 
@@ -118,14 +120,13 @@ def generate_cf_template():
         ConstraintDescription=description
     ))
 
-    # s3_bucket_name = t.add_parameter(Parameter(
-    #     "S3BucketName",
-    #     AllowedPattern="[a-zA-Z0-9\-]*",
-    #     Type="String",
-    #     Description="Name of S3 bucket to run the website from",
-    #     ConstraintDescription="can contain only alphanumeric characters
-    #     and dashes.",
-    # ))
+    website_s3_bucket_name = t.add_parameter(Parameter(
+        "WebsiteS3BucketName",
+        AllowedPattern="[a-zA-Z0-9\-]*",
+        Type="String",
+        Description="Name of S3 bucket to store the website in",
+        ConstraintDescription="can contain only alphanumeric characters and dashes.",
+    ))
 
     # The SNS topic the website will publish chat messages to
     website_sns_topic = t.add_resource(sns.Topic(
@@ -135,7 +136,7 @@ def generate_cf_template():
     ))
     t.add_output(Output(
         "WebsiteSnsTopic",
-        Description="website_sns_topic_arn",
+        Description="sns_topic_arn",
         Value=Ref(website_sns_topic),
     ))
 
@@ -180,6 +181,47 @@ def generate_cf_template():
         "WebsiteRole",
         Description="website_iam_role_arn",
         Value=GetAtt(website_role, "Arn"),
+    ))
+
+    website_bucket = t.add_resource(s3.Bucket(
+        'WebsiteS3Bucket',
+        BucketName=Ref(website_s3_bucket_name),
+        WebsiteConfiguration=s3.WebsiteConfiguration(
+            ErrorDocument="error.html",
+            IndexDocument="index.html"
+        )
+    ))
+    t.add_output(Output(
+        "S3Bucket",
+        Description="s3_bucket",
+        Value=Ref(website_bucket),
+    ))
+    t.add_resource(s3.BucketPolicy(
+        'WebsiteS3BucketPolicy',
+        Bucket=Ref(website_bucket),
+        PolicyDocument={
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "PublicAccess",
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": ["s3:GetObject"],
+                    "Resource": [{
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:aws:s3:::",
+                                {
+                                    "Ref": "website_bucket",
+                                },
+                                "/*"
+                            ]
+                        ]
+                    }]
+                }
+            ]
+        }
     ))
 
     return t
@@ -227,11 +269,23 @@ def delete(args, config, cf_conn):
     print(resp)
 
 
+def output(args, config, cf_conn):
+    """
+    Describes a CloudFormation Stack and prints the outputs
+    """
+    print("Describing CloudFormation Stack %s..." % config['stack_name'])
+    resp = conn.describe_stacks(
+        config['stack_name']
+    )
+    print('---');
+    print('region: %s' % args['--region'])
+    for output in resp[0].outputs:
+        print("%s: %s" % (output.description, output.value))
+
+
 if __name__ == '__main__':
     args = docopt(__doc__, version='Lambda Chat AWS Resources 0.2')
-    print(args)
     config = load_config()
-    print(config)
 
     print_cf_template = args['cf'] or args['launch']
 
@@ -255,12 +309,8 @@ if __name__ == '__main__':
             delete(args, config, conn)
 
         elif (args['output']):
-            # Describe an existing CloudFormation Stack
-            print("Deleting CloudFormation Stack...")
-            resp = conn.describe_stacks(
-                config['stack_name']
-            )
-            print(resp)
+            output(args, config, conn)
+
 
     except Exception, e:
         print('ERROR')
