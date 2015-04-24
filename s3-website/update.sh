@@ -29,9 +29,12 @@ cat > public/config.js <<EOF
 var google_oauth_client_id = '${google_oauth_client_id}';
 var website_iam_role_arn = '${website_iam_role_arn}';
 var sns_topic_arn = '${sns_topic_arn}';
+var data_key = '${data_key}';
+var region = '${region}';
 EOF
 
-echo "Upload the website files to S3..."
+echo "Uploading the website files to S3..."
 aws s3 sync --region ${region} public/ s3://${s3_bucket}/
 
 echo "-- DONE --"
+echo "Go to: http://${s3_bucket}.s3-website-${region}.amazonaws.com/"

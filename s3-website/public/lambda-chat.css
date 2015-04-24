@@ -33,3 +33,9 @@ body > .container {
 .chatbox > .panel-footer > .form > .form-group {
   margin-bottom: 0px;
 }
+
+#chat-body {
+  overflow-y: scroll;
+  height:400px;
+  padding-right:20px;
+}
