@@ -12,7 +12,7 @@ Please don't send a million messages through here - it does cost us money and we
 ## How it works
 
 
-<pre>    ◎ ◎
+<pre style="line-height: normal;">    ◎ ◎
      ◡
 
      │(1)
@@ -58,6 +58,7 @@ Please don't send a million messages through here - it does cost us money and we
  └────────────┃    S3 Object     ┃◀─────────────┘
  (10)         ┃                  ┃            (9)
               ┗━━━━━━━━━━━━━━━━━━┛
+
 
 Created with Monodraw</pre>
 
