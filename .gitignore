@@ -35,3 +35,6 @@ tmp/*
 
 # Ignore compiled Python files
 *.pyc
+
+# Ignore the data file
+s3-website/public/data.json

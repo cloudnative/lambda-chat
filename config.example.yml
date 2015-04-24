@@ -8,6 +8,9 @@ region: us-east-1
 # This must be unique across all AWS accounts
 s3_bucket: lambda-chat
 
+# The S3 object key for the chat data
+data_key: data.json
+
 # The Google OAuth Client ID
 # Visit: https://console.developers.google.com/project
 # To create a project, enable the Google+ API, and create an ID
@@ -18,4 +21,5 @@ google_oauth_client_id: TODO
 # using SNS
 website_iam_role_arn: arn:aws:iam::TODO
 
-sns_topic_arn: ''
+# The ARN of the SNS topic to publish chat messages to, and for Lambda to read
+sns_topic_arn: arn:aws:sns::TODO
