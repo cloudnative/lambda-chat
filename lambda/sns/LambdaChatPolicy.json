@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement":[
+    {
+      "Sid":"Stmt1",
+      "Effect":"Allow",
+      "Action":["dynamodb:*"],
+      "Resource":["arn:aws:dynamodb:us-east-1:658794617753:table/lambdachat"]
+    },
+    {
+      "Sid":"Stmt2",
+      "Effect":"Allow",
+      "Action":["logs:*"],
+      "Resource":["arn:aws:logs:*:*:*"]
+    }
+  ]
+}
