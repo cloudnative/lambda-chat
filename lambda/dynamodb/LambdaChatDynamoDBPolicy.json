@@ -1,32 +1,21 @@
 {
   "Version": "2012-10-17",
   "Statement": [
-    {
+      {
+          "Effect": "Allow",
+          "Action": [
+              "lambda:InvokeFunction"
+          ],
+          "Resource": "*"
+      },
+      {
       "Effect": "Allow",
       "Action": [
-        "dynamodb:DescribeStream",
-        "dynamodb:GetRecords",
-        "dynamodb:GetShardIterator",
-        "dynamodb:ListStreams",
-        "dynamodb:Scan"
+          "dynamodb:*",
+          "s3:*",
+          "logs:*"
       ],
-      "Resource": "arn:aws:dynamodb:us-east-1:658794617753:table/lambdachat"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "arn:aws:logs:*:*:*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject"
-      ],
-      "Resource": "arn:aws:s3:::lambda-chat"
+      "Resource": "*"
     }
   ]
 }
