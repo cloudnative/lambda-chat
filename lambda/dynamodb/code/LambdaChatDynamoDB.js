@@ -5,7 +5,8 @@ var ddb = new aws.DynamoDB(
     {endpoint: 'https://preview-dynamodb.us-east-1.amazonaws.com/',
      params: {TableName: 'lambdachat'}});
 var s3 = new aws.S3();
-var bucket = 'lambda-chat'
+var bucket = 'lambda-chat';
+var keyname = 'data.json';
 
 
 exports.handler = function(event, context) {
@@ -14,11 +15,25 @@ exports.handler = function(event, context) {
 
     async.waterfall([
         function getrecords(next) {
+            var params = {
+                "IndexName": "channel-timestamp-index",
+                "KeyConditions": {
+                    "channel": {
+                        "AttributeValueList": [{
+                            "S": 'default'
+                        }],
+                        "ComparisonOperator": "EQ"
+                    }
+
+                },
+                "Limit": "20",
+            }            
             console.log('Scanning the table');
-            ddb.scan({Limit: 20}, next);
+            ddb.query(params, next);
         },
         function buildjson(response, next) {
             console.log('Building JSON file');
+            console.log(response);
             var messageData = {
                 messages: []
             };
@@ -29,6 +44,7 @@ exports.handler = function(event, context) {
                 message['id'] = ii.message_id['S'];
                 message['name'] = ii.name['S'];
                 message['message'] = ii.message['S'];
+                message['channel'] = ii.message['S'];
                 messageData.messages.push(message);
             }
             next(null, JSON.stringify(messageData));
@@ -36,7 +52,7 @@ exports.handler = function(event, context) {
         function savetos3(jsonstring, next) {
             s3.putObject({
                 Bucket: bucket,
-                Key: 'data.json',
+                Key: keyname,
                 Body: jsonstring
                 }, next);
         }
@@ -47,7 +63,7 @@ exports.handler = function(event, context) {
         } else {
             console.log('Saved Data to S3');
         }
-        context.done(null, '');
+        context.done(err, '');
     });
     
 };
