@@ -38,3 +38,6 @@ tmp/*
 
 # Ignore Emacs backup files
 *~
+
+# Ignore the data file
+s3-website/public/data.json

@@ -1,11 +1,20 @@
-var web_identity_token = null;
+var webIdentityToken = null;
 var sns = null;
+var chatUpdateId = null;
+var displayedMessages = [];
+var username = 'Anonymous';
 
 function setStateSignedOut() {
     // Toggle state to signed out
     $('#signout-button').addClass('hidden');
     $('#signed-out').show();
     $('#signed-in').hide();
+
+    // Stop reading chat messages
+    if (chatUpdateId) {
+        clearInterval(chatUpdateId)
+        chatUpdateId = null;
+    }
 }
 
 function setStateSignedIn() {
@@ -13,6 +22,9 @@ function setStateSignedIn() {
     $('#signout-button').removeClass('hidden');
     $('#signed-out').hide();
     $('#signed-in').show();
+
+    // Start reading the chat messages
+    chatUpdateId = setInterval(updateChat, 1000);
 }
 
 function showSigninButton() {
@@ -28,9 +40,6 @@ function showSigninButton() {
 
 
 function signinCallback(authResult) {
-    console.log('signinCallback() START');
-    console.log(authResult);
-
     if (authResult['status']['signed_in']) {
         console.log('User is signed in!');
 
@@ -41,16 +50,9 @@ function signinCallback(authResult) {
         gapi.client.load('plus', 'v1', getUserProfile)
 
         // Save the token
-        web_identity_token = authResult['id_token']
+        webIdentityToken = authResult['id_token']
 
-        getAwsCredentials();
-        // AWS.config.credentials = new AWS.WebIdentityCredentials({
-        //     RoleArn: 'arn:aws:iam::1234567890:role/WebIdentity',
-        //     WebIdentityToken: authResult['id_token']
-        // });
-
-        // console.log('Temporary AWS credentials are:')
-        // console.log(AWS.config.credentials)
+        setAwsConfig();
 
     } else {
         // Update the app to reflect a signed out user
@@ -66,8 +68,6 @@ function signinCallback(authResult) {
         // Toggle state to signed out
         setStateSignedOut();
     }
-
-    console.log('signinCallback() END');
 }
 
 function signOut() {
@@ -77,25 +77,16 @@ function signOut() {
 }
 
 
-function getAwsCredentials() {
-    var params = {
+function setAwsConfig() {
+    AWS.config.region = region
+    AWS.config.credentials = new AWS.WebIdentityCredentials({
         RoleArn: website_iam_role_arn,
         RoleSessionName: 'lambda-chat',
-        WebIdentityToken: web_identity_token
-    };
-    console.log('Setting AWS credentials')
-    var sts = new AWS.STS();
-    sts.assumeRoleWithWebIdentity(params, function(err, data) {
-        if (err) {
-            // an error occurred
-            console.log(err, err.stack);
-        } else {
-            // successful response
-            console.log(data);
-            AWS.config.credentials = data.Credentials;
-            sns = new AWS.SNS();
-        }
+        WebIdentityToken: webIdentityToken
     });
+
+    // Also create an SNS
+    sns = new AWS.SNS();
 }
 
 
@@ -103,6 +94,8 @@ function getUserProfile() {
     gapi.client.plus.people.get({userId: 'me'}).execute(function(resp) {
         console.log('Got user details')
         console.log(resp);
+        username = resp.displayName;
+        setStatusBar('Welcome ' + username);
     });
 }
 
@@ -110,31 +103,25 @@ function sendMessage(input) {
     message = input.val();
     if (message.length > 0) {
         var payload = {
-            name: 'PAS',
+            name: username,
             message: message,
         }
 
         var params = {
-            Message: payload,
-            // MessageAttributes: {
-            //     someKey: {
-            //         DataType: 'STRING_VALUE', /* required */
-            //         BinaryValue: new Buffer('...') || 'STRING_VALUE',
-            //         StringValue: 'STRING_VALUE'
-            //     },
-            //     /* anotherKey: ... */
-            // },
-            // MessageStructure: 'json',
+            Message: JSON.stringify(payload),
             TargetArn: sns_topic_arn
         };
 
+        setStatusBar('Sending message to SNS');
         sns.publish(params, function(err, data) {
             if (err) {
                 // an error occurred
                 console.log(err, err.stack);
+                setStatusBar(err);
             } else {
                 // successful response
                 console.log(data);
+                setStatusBar('Message sent to SNS successfully');
             }
         });
     }
@@ -143,6 +130,82 @@ function sendMessage(input) {
     input.val('');
 }
 
+
+function updateChat() {
+    getData().done(function(data) {
+        var messageList = data['messages'];
+
+        // Get the last message displayed
+        if (displayedMessages.length > 0) {
+            lastMessage = displayedMessages[displayedMessages.length - 1];
+            console.log('The last message is: ');
+            console.log(lastMessage);
+        } else {
+            lastMessage = {};
+        }
+
+        // Figure out which messages from the data to add
+        msgsToAdd = [];
+        for (var i = messageList.length - 1; i >= 0; i--) {
+            var message = messageList[i];
+            if (areMessagesEqual(message, lastMessage)) {
+                break;
+            }
+
+            msgsToAdd.unshift(message);
+        }
+
+        // Now actually display the messages
+        chatBody = $('#chat-body');
+        for (var i = 0; i < msgsToAdd.length; i++) {
+            message = msgsToAdd[i];
+
+            msgHtml  = '<div class="row">';
+            msgHtml += '  <div class="col-xs-2 text-right">';
+            msgHtml += '    <b>' + message['name'] + '</b>';
+            msgHtml += '  </div>';
+            msgHtml += '  <div class="col-xs-10">' + message['message'] + '</div>';
+            msgHtml += '</div>';
+
+            chatBody.append(msgHtml);
+            chatBody.animate({
+                scrollTop: "+=" + 20 + "px"
+            });
+
+            displayedMessages.push(message);
+        }
+    });
+}
+
+
+function areMessagesEqual(msg1, msg2) {
+    return msg1['name'] == msg2['name']
+        && msg1['message'] == msg2['message'];
+}
+
+
+/**
+ * Makes a call to a data file to set a data object for the chart
+ * @return {JSON object}
+ */
+function getData() {
+    return $.getJSON(data_key).then(
+        function(data) {
+            console.log('Data loaded');
+            console.log(data);
+            return data;
+        }
+        , function(jqXHR, textStatus, errorThrown) {
+            console.log("ERROR: " + errorThrown);
+            console.log(jqXHR);
+        }
+    );
+}
+
+
+function setStatusBar(text) {
+    $('#status-bar').text(text);
+}
 
 // Load
 $(function() {
@@ -155,9 +218,13 @@ $(function() {
     // Show the sign in button
     showSigninButton();
 
+    // Add a listener for the ENTER key on the chat message box
     $('#chat-message').keypress(function(e) {
         if (e.which == 13) {
             sendMessage($('#chat-message'));
         }
     });
+
+    // Always get the data
+    $.ajaxSetup({ cache: false });
 });
