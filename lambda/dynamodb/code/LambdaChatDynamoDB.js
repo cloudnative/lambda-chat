@@ -10,8 +10,15 @@ var keyname = 'data.json';
 
 
 exports.handler = function(event, context) {
-    console.log('Hello there...');
-    console.log(event)
+    console.log('Handle DynamoDB Streams event');
+    console.log(event);
+    var new_object = event.Records[0].Dynamodb;
+    var channel = 'default';
+    if ('channel' in new_object.NewImage) {
+        channel = new_object.NewImage.channel.S;
+    }
+    console.log('channel = ' + channel);
+
 
     async.waterfall([
         function getrecords(next) {
