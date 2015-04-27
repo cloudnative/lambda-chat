@@ -35,3 +35,6 @@ tmp/*
 
 # Ignore compiled Python files
 *.pyc
+
+# Ignore Emacs backup files
+*~
