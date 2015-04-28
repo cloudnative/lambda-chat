@@ -30,9 +30,6 @@ node_modules
 config.yml
 s3-website/public/config.js
 
-# Ignore files in the tmp directory
-tmp/*
-
 # Ignore compiled Python files
 *.pyc
 
