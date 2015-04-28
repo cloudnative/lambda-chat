@@ -147,7 +147,43 @@ The script tells you the URL of the website. Open that up in your browser.
 
 #### Lambda functions
 
-TODO @garnaat using kappa
+To help with the AWS Lambda side of things, we are using
+[kappa](https://github.com/garnaat/kappa).  Kappa is a CLI tool that helps with
+the details of creating and managing AWS Lambda applications.  You must install
+kappa before proceeding.  You can install it from PyPI using pip:
+
+    % pip install kappa
+
+or you can clone the kappa repo and install locally:
+
+    % git clone git@github.com:garnaat/kappa.git
+    % cd kappa
+    % pip install -r requirements.txt
+    % python setup.py install
+
+Next, you must edit the config.yml files in the lambda/sns directory and the
+lambda/dynamodb  directories.  The config.yml files have comments which direct
+you to the parts that need to be changed.
+
+Now create the components required for the SNS->DynamoDB Lambda function:
+
+1. cd lambda/sns
+1. run ``kappa config.yml create``
+1. run ``kappa config.yml invoke``.  This will call the AWS Lambda function
+   synchronously with test data and return the log data to the console.
+1. run ``kappa config.yml add_event_sources``.  This will connect the SNS topic
+   to your AWS Lambda function.
+
+Finally, you need to create the components requried for the DynamoDB->S3 Lambda
+function:
+
+1. cd lambda/dynamodb
+1. run ``kappa config.yml create``
+1. run ``kappa config.yml invoke``.  This will call the AWS Lambda function
+   synchronously with test data and return the log data to the console.
+1. run ``kappa config.yml add_event_sources``.  This will connect the DynamoDB
+   stream to your AWS Lambda function.
+
 
 ### Usage
 
@@ -166,7 +202,9 @@ When you are making changes to the website, you can push them to S3 by running:
 
 For modifications to the AWS Lambda functions, run:
 
-TODO @garnaat using kappa
+    % kappa config.yml update_code
+
+in the corresponding lambda directory.
 
 
 ## Clean up
@@ -177,7 +215,10 @@ Delete the CloudFormation stack
 
 Delete the Lambda functions
 
-TODO @garnaat using kappa
+    % kappa config.yml delete
+
+in the corresponding lambda directory.  This will delete the AWS Lambda
+function, remove the event source mappings, and delete the IAM role.
 
 ## Reading, resources and other stuff
 

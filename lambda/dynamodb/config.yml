@@ -1,0 +1,31 @@
+---
+# change profile and region to meet your needs
+profile: cloudnative
+region: us-east-1
+resources: resources.json
+iam:
+  policy:
+      description: A policy used with the Kappa SNS->DynamoDB example
+      name: LambdaChatDynamoDBPolicy
+      document: LambdaChatDynamoDBPolicy.json
+  role:
+      name: LambdaChatDynamoDBRole
+lambda:
+  name: LambdaChatDynamoDB
+  zipfile_name: LambdaChatDynamoDB.zip
+  description: A simple chat app with S3/SNS/DynamoDB/Lambda
+  path: code/
+  handler: LambdaChatDynamoDB.handler
+  runtime: nodejs
+  memory_size: 128
+  timeout: 3
+  event_sources:
+    -
+      # Change this to point to your DynamoDB stream.
+      # Note that you must be in the DynamoDB Streams preview.
+      arn: arn:aws:dynamodb:us-east-1:123456789012:table/lambdachat/stream/b188ce53-44d7-34a6-aa72-c11eb0e80675-09223370606719090390-7b9f5f0c/
+      batch_size: 1
+      starting_position: LATEST
+      enabled: true
+  test_data: input.json
+  
