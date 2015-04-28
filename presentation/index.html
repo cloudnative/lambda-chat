@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="remark,remarkjs,markdown,slideshow,presentation" />
+    <meta name="description" content="A simple, in-browser, markdown-driven slideshow tool." />
+    <title>AWS Lambda</title>
+    <style type="text/css">
+      @import url(//fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(//fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif';
+      }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content h1 { font-size: 3em; }
+      .remark-slide-content h2 { font-size: 2em; }
+      .remark-slide-content h3 { font-size: 1.6em; }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.25em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      .orange { color: #f86000; }
+      a, a > code {
+        color: #f86000;
+        text-decoration: none;
+      }
+      code {
+        -moz-border-radius: 5px;
+        -web-border-radius: 5px;
+        background: #e7e8e2;
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+
+
+      #slide-what .slides {
+        font-size: 0.9em;
+        position: absolute;
+        top:  220px;
+      }
+      #slide-what .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-what .slides .first, #slide-what .slides .second {
+        padding: 1px 20px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-what .slides .first {
+        background: #fff;
+        height: 100px;
+        width: 120px;
+        position: relative;
+      }
+      #slide-what .slides .arrow {
+        background: #fff;
+        position: absolute;
+        left: 170px;
+        top: 0px;
+      }
+      #slide-what .slides .second {
+        background: #fff;
+        height: 100px;
+        width: 200px;
+        position: absolute;
+        left: 220px;
+        top: 0px;
+      }
+
+      /* Billing table */
+      #slide-billing table {
+        margin-left: 2em;
+      }
+      #slide-billing table tr th {
+        border-bottom: 2px solid #808080;
+        padding-left: 1em;
+        padding-right: 1em;
+      }
+      #slide-billing table tr td {
+        text-align: right;
+        padding-right: 2em;
+      }
+
+      /* Lambda chat demo */
+      #slide-lambda-chat-demo h2 {
+        margin-bottom: 4em;
+      }
+      #slide-lambda-chat-demo h2 a code {
+        color: #000;
+        background: #fff;
+      }
+
+
+      /* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# AWS Lambda
+
+Peter Sankauskas<br />
+
+???
+
+P = Presenter Mode
+
+C = Cloned View
+
+Terminal:
+
+    screen -S demo
+    screen -x demo
+
+Logout and Login:
+
+  - AWS Web Console - us-east-1 - Lambda
+---
+template: inverse
+
+## Who is this guy?
+---
+layout: false
+## Peter Sankauskas
+
+[@pas256](https://twitter.com/pas256)
+
+Community
+
+  - Organize the Advanced AWS Meetup in SF
+
+  - AWS Community Hero
+
+Open source
+
+  - Wrote the EC2 inventory plugin for Ansible
+
+  - NetflixOSS Cloud Prize Winner
+
+Company
+
+  - Founder of Answers for AWS
+
+  - Founder &amp; CEO of CloudNative
+---
+## What does CloudNative give me?
+
+https://cloudnative.io/
+
+### An automated way of baking AMIs
+
+  - Integration with Jenkins, CircleCI, Teamcity &amp; custom webhooks
+
+  - Use your existing Ansible playbooks
+
+### A simple blue/green deployment model
+
+  - Uses Auto Scaling Groups to scale on demand
+
+  - No downtime deployment
+
+???
+
+Anyone here messed around with Jenkins for hours to get it building an AMI when tests pass?
+
+With us,
+
+---
+template: inverse
+
+## .orange[AWS Lambda]
+
+## What is it and why should I be using it?
+---
+layout: false
+name: what
+.left-column[
+  ## What is it?
+]
+.right-column[
+  A compute service that makes it easy to run a function in response to events.
+
+  ### Example
+
+.slides[
+  .first[
+  ### Event
+  New image
+  ]
+  .arrow[
+    ## &rarr;
+  ]
+  .second[
+  ### Function
+  Generate thumbnail
+  ]
+]
+
+]
+
+---
+.left-column[
+  ## What is it?
+
+  ### - Event
+]
+.right-column[
+  What events can trigger a Lambda function?
+
+  - New object in S3
+
+  - An item changed in a DynamoDB table
+
+  - New entries in a Kinesis stream
+
+  - A sync event in Cognito
+
+  - API call: `Invoke` and `InvokeAsync`
+
+  - SNS message
+]
+
+???
+
+Examples
+  - S3: a user uploads a new image to S3, run a function to generate thumbnails
+  - S3: CloudTrail also writes files to S3
+  - DDB: A new transaction in DynamoDB - run some fraud detection
+  - DDB: User enters DOB, calculate age - thing Postgres Trigger Procedures
+  - Kinesis: Throw in a lot of data - need a consumer. Now Lambda can be that consumer, and farm the data off to different endpoints. Load into Redshift for processing, and also do some basic pattern matching and incremenet counts in DynamoDB
+  - Cognito: Mobile app where user accounts are needed. Stores k/v pairs. When you sync from the device to the server, run a Lambda function. Lets say you have some kind of RPG game, and the user makes it to next level, the Lambda function could update the leaderboard.
+  - API: From any SDK, the CLI or Web console
+  - SNS Message is the big one.
+---
+.left-column[
+  ## What is it?
+
+  ### - Event
+  ### - Function
+]
+.right-column[
+  What language can I write a Lambda function in?
+
+  - Now: JavaScript (technially NodeJS v0.10.33)
+
+  - Announced: Java
+
+  - Wanted: Python and Go
+
+  - Hack: Anything
+]
+
+???
+
+Java should have been released by Apr 24?
+
+---
+.left-column[
+  ## What is it?
+
+  ### - Event
+  ### - Function
+
+  ## Why use it?
+]
+.right-column[
+  You get to focus on the code!
+
+  - Write atomic units
+
+  - Easy to test
+
+  - No server or container maintenance
+
+  - Forced micro (nano?) services approach
+
+  - Secured by an IAM policy
+
+  - Speed
+
+  - Cheap
+]
+
+???
+  - You don't worry about setting up and configuring NodeJS, or monitoring, or logging services - all built in
+  - A Dockerfile is ops - you are writing a shell script to configure an environment
+  - A lambda function is protected by the same IAM policy framework that protects the rest of your AWS infrastructure
+
+---
+template: inverse
+
+## How cheap?
+---
+.left-column[
+  ## Billing Model
+]
+.right-column[
+AWS Lambda is charged by both
+
+  - Requests
+    - $0.20 per million requests
+
+  - Compute
+    - $0.00001667 per GB-second
+
+### Free tier
+
+The Lambda free tier includes:
+
+  - 1,000,000 free requests per month
+
+  - 400,000 GB-seconds of compute time per month
+
+]
+
+---
+name: billing
+.left-column[
+  ## Billing Model
+
+]
+.right-column[
+How is a GB-second calculated?
+
+  - Duration: rounded up to the nearest 100ms
+
+  - Memory: you choose the maximum memory your function needs
+
+    - from 128MB to 1GB
+
+    - in increments of 64MB
+
+
+### Formula
+
+```
+GB-s = (memory / 1024) * (duration * 1000)
+```
+
+]
+---
+.left-column[
+  ## Billing Model
+
+  ### - Example
+
+]
+.right-column[
+An example
+
+  - 10M requests / month
+  - Each request
+      - lasts for 600ms
+      - uses a max of 512Mb of memory
+
+```python
+Request cost  = (10M - 1M) * $0.20/month
+              = $1.80
+
+      Compute = (512/1024)GB * (10M * 600ms * 1000)s
+              = 3,000,000 GB-s
+
+Compute costs = (3,000,000 - 400,000) * $0.00001667
+              = $43.342
+
+        Total = $45.14
+```
+]
+---
+template: inverse
+
+## OK, that's cheap.
+
+## So how does it work?
+---
+.left-column[
+## Programming model
+
+]
+.right-column[
+Your function defines a handler
+
+```javascript
+exports.handler = function(event, context) {
+  var key1 = event.key1
+  console.log('value =', key1);
+  context.succeed(key1);
+};
+```
+
+### The `context` object
+
+  - How you interact with the Lambda execution environment
+
+  - When your function is complete, call one of:
+    ```javascript
+      // It's all good
+      context.succeed(Object result);
+
+      // Something bad happened
+      context.fail(Error error);
+
+      // Could be either
+      context.done(Error error, Object result);
+    ```
+]
+???
+"error first" callback design pattern
+
+---
+.left-column[
+## Invocation
+
+### - Pull
+
+]
+.right-column[
+### Pull Model
+
+Lambda polls the event source and invokes your Lambda function when it detects an event
+
+![Lambda Kinesis Pull Model](imgs/kinesis-pull-10.png)
+
+.footnote[.red[*] Image ~~courteous of~~ stolen from the AWS docs]
+
+]
+---
+.left-column[
+## Invocation
+
+### - Pull
+### - Push
+
+]
+.right-column[
+
+### Push Model
+
+The event source directly invokes a Lambda function when it detects an event
+
+![Lambda S3 Push Model](imgs/push-s3-example-10.png)
+
+.footnote[.red[*] Ditto]
+
+]
+---
+.left-column[
+## Permissions
+
+]
+.right-column[
+
+Your Lambda function executes within an IAM Role
+
+### Execution Permissions
+
+E.g.
+
+  - Write logs to CloudWatch Logs (needed for debugging)
+  - Read/write objects from/to an S3 bucket
+  - Write items to a DynamoDB table
+
+### Invocation Permissions
+
+```json
+{
+  "Statement":[
+    {
+      "Action":"lambda:InvokeFunction",
+      "Effect":"Allow"
+      ...
+    }]
+```
+
+]
+
+???
+
+S3
+```
+"Principal":"s3.amazonaws.com"  ,
+"SourceArn":"arn:aws:s3:::examplebucket",
+"SourceAccount":"account-id",
+```
+Cross-account
+```
+"Principal": "account-id"
+```
+---
+## Example Kinesis Pull Policy
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:InvokeFunction"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kinesis:GetRecords",
+        "kinesis:GetShardIterator",
+        "kinesis:DescribeStream",
+        "kinesis:ListStreams",
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+---
+template: inverse
+
+## Open Source Projects
+---
+## lambdash
+
+Written by Eric Hammond ([@esh](https://twitter.com/esh))
+
+
+### What is it?
+
+A lambda function that runs arbitrary shell commands in the AWS Lambda environment.
+
+```
+$ lambdash pwd
+/var/task
+```
+
+.footnote[https://github.com/alestic/lambdash]
+
+---
+template: inverse
+
+## Demo
+
+???
+
+```
+cd ~/code/pas256/lambdash
+./lambdash pwd
+./lambdash cat /etc/issue
+./lambdash python --version
+./lambdash /usr/bin/python2.7 --version
+./lambdash java -version
+```
+
+What NodeJS modules are installed
+
+```
+dirs=$(./lambdash 'echo $NODE_PATH' | tr ':' '\n' | sort); echo $dirs
+
+./lambdash 'for dir in '$dirs'; do echo $dir; ls -1 $dir; echo; done'
+```
+
+---
+## Kappa
+
+Written by Mitch Garnaat ([@garnaat](https://twitter.com/garnaat)) who also wrote boto
+
+### What is it?
+
+Kappa is a command line tool that makes it easier to deploy, update, and test AWS Lambda functions
+
+```
+$ kappa [OPTIONS] CONFIG COMMAND [ARGS]...
+```
+
+The config is a YAML file containing all the details
+
+.footnote[https://github.com/garnaat/kappa]
+
+---
+## Kappa Kinesis config file
+
+```bash
+# Change the profile and region to suit your application
+profile: personal
+region: us-east-1
+iam:
+  policy:
+    name: AWSLambdaKinesisExecutionRole
+  role:
+    name: KinesisSampleRole
+lambda:
+  name: KinesisSample
+  zipfile_name: KinesisSample.zip
+  description: Testing Kinesis Lambda handler
+  path: ProcessKinesisRecords.js
+  handler: ProcessKinesisRecords.handler
+  runtime: nodejs
+  memory_size: 128
+  timeout: 3
+  event_sources:
+    -
+      # You need to change this arn to point to your own kinesis
+      # stream that you have created separately.
+      arn: arn:aws:kinesis:us-east-1:084307701560:stream/lambdastream
+      starting_position: TRIM_HORIZON
+      batch_size: 100
+  test_data: input.json
+  ```
+---
+## Kappa Usage
+
+Create the IAM policy, IAM Role, zips up the code and create your Lambda function
+
+```bash
+$ kappa config.yml create
+```
+
+Test your function with the `test_data` event as input
+
+```bash
+$ kappa config.yml invoke
+```
+
+Make a change to the code, and then
+```bash
+$ kappa config.yml update_code
+```
+
+---
+template: inverse
+
+## Lambda Chat
+---
+## Goal
+
+To create a dynamic website without EC2
+
+  - No servers
+
+  - No ELBs
+
+  - No security groups
+---
+## Inspiration
+
+
+.center[![Building Dynamic Dashboards Using Lambda and DynamoDB Streams: Part 1](imgs/dynamic-dashboards.png)]
+
+.footnote[https://medium.com/aws-activate-startup-blog/building-dynamic-dashboards-using-lambda-and-dynamodb-streams-part-1-217e2318ae17]
+
+---
+
+## Vote App
+
+http://voteapp.s3-website-us-east-1.amazonaws.com/
+
+---
+## Lambda Chat
+
+A simple chat application using AWS Lambda, SNS, DynamoDB and S3.
+
+---
+## Lambda Chat
+
+A simple chat application using AWS Lambda, SNS, DynamoDB and S3.
+
+  - Host the HTML, CSS and JavaScript on S3
+
+  - Each chat message is an SNS message
+
+  - Use AWS Lambda to process the chat messages
+
+  - Use DynamoDB as the data store
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+
+Use Web Identity Federation to issue temporary AWS credentials
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+
+Use Web Identity Federation to issue temporary AWS credentials
+
+### 2. How do we read the data back out?
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+
+Use Web Identity Federation to issue temporary AWS credentials
+
+### 2. How do we read the data back out?
+
+Store the resulting JSON in S3, and have the Javascript poll and update the UI
+
+---
+background-image: url(imgs/lambda-chat.png)
+???
+
+1. The user opens their browser and go to the website which is hosted entirely on S3
+2. The user signs in with their Google account and gets back an id_token
+3. Using AWS Web Identity Federation in the Javascript SDK, the id_token is sent to get temporary AWS credentials from STS.
+4. STS verifies the token with Google
+5. The users types in a message, hits ENTER, and the website publishes the message to an SNS Topic.
+6. A Lambda function is trigged by the SNS message, which gets the contents of the message, and...
+7. Stores the message in a DynamoDB table
+8. The process of adding a new chat message to the DynamoDB table triggers another Lambda function. This requires the currently-in-preview DynamoDB Streams feature. This second Lambda function reads the last 20 messages from DynamoDB, and...
+9. Writes them to an S3 object in JSON format
+10. The website polls the S3 object every second, and updates the chat box with any new messages it finds.
+---
+name: lambda-chat-demo
+class: middle, center
+
+Interactive Demo
+
+## [`http://bit.ly/lambda-chat`](http://bit.ly/lambda-chat)
+
+<small>Pray to the demo gods</small>
+
+???
+
+Remember to show
+  - The `data.json` file
+  - The logs from AWS web console
+---
+### SNS to DynamoDB table
+```javascript
+console.log('Loading function');
+var aws = require('aws-sdk');
+var ddb = new aws.DynamoDB(
+    {endpoint: 'https://preview-dynamodb.us-east-1.amazonaws.com/',
+     params: {TableName: 'lambdachat'}});
+
+exports.handler = function(event, context) {
+    var message_id = event.Records[0].Sns.MessageId;
+    var timestamp = event.Records[0].Sns.Timestamp;
+    var payload = JSON.parse(event.Records[0].Sns.Message);
+    var channel = 'default';
+    if ("channel" in payload) {
+        channel = payload.channel;
+    }
+    var name = payload.name;
+    var message = payload.message;
+    var LambdaReceiveTime = new Date().toString();
+    var itemParams = {Item: {message_id: {S: message_id},
+                             timestamp: {S: timestamp},
+                             channel: {S: channel},
+                             name: {S: name},
+                             message: {S: message}}};
+    ddb.putItem(itemParams, function(err, data) {
+        context.done(err,'');
+    });
+};
+```
+
+???
+
+Things to note:
+
+  - Even though Lambda function isn't using DynamoDB Streams, the preview endpoint still needs to be in there
+  - The SNS message is JSON, but the payload of the message is encoded JSON, so it needs to be decoded
+  - We have support for channels due to how the DyanmoDB table is structured
+---
+```javascript
+exports.handler = function(event, context) {
+    async.waterfall([
+        function getrecords(next) {
+            var params = {
+                "IndexName": "channel-timestamp-index",
+                "KeyConditions": {
+                    "channel": {
+                        "AttributeValueList": [{"S": 'default'}],
+                        "ComparisonOperator": "EQ"
+                    }
+                }, "Limit": "20",
+            }
+            ddb.query(params, next);
+        },
+        function buildjson(response, next) {
+            var messageData = ...
+            next(null, JSON.stringify(messageData));
+        },
+        function savetos3(jsonstring, next) {
+            s3.putObject({
+                Bucket: bucket,
+                Key: keyname,
+                Body: jsonstring
+            }, next);
+        }
+    ], function (err) {
+        if (err) {
+            console.log('got an error');
+            console.log(err, err.stack);
+        } else {
+            console.log('Saved Data to S3');
+        }
+        context.done(err, '');
+    });
+
+};```
+---
+## Lambda Chat is open sourced
+
+https://github.com/cloudnative/lambda-chat
+
+You will find
+
+  - All the code, including this presentation
+
+  - CloudFormation script (using [troposphere](https://github.com/cloudtools/troposphere)) for bringing up all the AWS resources
+
+  - Update script to push the website code to S3
+
+  - [Kappa](https://github.com/garnaat/kappa) configuration for both Lambda functions
+
+  - Easy clean up process
+---
+template: inverse
+
+## Final thoughts
+---
+## Limitations
+
+  - 100 concurrent, 1000 requests/s
+
+  - Event sources
+
+  - Your imagination
+---
+## What generates an SNS Message?
+
+  - .orange[Auto Scaling] can post events to SNS when instances are launched or terminated.
+
+  - .orange[GitHub] can post repository events to SNS. Go to: "Settings" / "Webhooks &amp; Services"
+
+  - An .orange[RDS] Event Subscription can publish to SNS for instance, security group, parameter group and snapshots events.
+
+  - .orange[S3] can publish messages to SNS when a Reduced Redundancy Storage (RRS) object is lost.
+
+  - .orange[S3] can post messages to SNS when a new object is added to a bucket and when an existing object is updated.
+
+  - AWS .orange[CloudWatch] can trigger SNS messages from Alarms.
+
+  - AWS .orange[CloudTrail] can send an SNS messages when a new log file is ready.
+
+---
+name: last-page
+template: inverse
+
+## Thanks!
+
+## Questions?
+
+    </textarea>
+    <!--script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript"></script -->
+    <script src="remark-latest.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var hljs = remark.highlighter.engine;
+    </script>
+    <script src="remark.language.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create({
+          highlightStyle: 'monokai',
+          highlightLanguage: 'remark'
+        }) ;
+    </script>
+  </body>
+</html>
