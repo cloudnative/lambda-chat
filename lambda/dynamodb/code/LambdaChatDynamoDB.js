@@ -5,6 +5,7 @@ var ddb = new aws.DynamoDB(
     {endpoint: 'https://preview-dynamodb.us-east-1.amazonaws.com/',
      params: {TableName: 'lambdachat'}});
 var s3 = new aws.S3();
+// change bucket name to match your bucket name
 var bucket = 'lambda-chat';
 var keyname = 'data.json';
 

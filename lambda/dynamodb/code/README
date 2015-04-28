@@ -1,0 +1,4 @@
+This code requires the async nodejs package.  Before uploading the function you
+should install that package here using:
+
+    % npm install async

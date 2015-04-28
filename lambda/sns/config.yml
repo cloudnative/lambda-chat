@@ -1,0 +1,34 @@
+---
+# change profile and region to meet your needs
+profile: cloudnative
+region: us-east-1
+iam:
+  policy:
+      description: A policy used with the Kappa SNS->DynamoDB example
+      name: LambdaChatPolicy
+      document: LambdaChatPolicy.json
+  role:
+      name: LambdaChatRole
+      policy: LambdaChatPolicy
+lambda:
+  name: LambdaChat
+  zipfile_name: LambdaChat.zip
+  description: A simple chat app with S3/SNS/DynamoDB/Lambda
+  path: lambdachat.js
+  handler: lambdachat.handler
+  runtime: nodejs
+  memory_size: 128
+  timeout: 3
+  permissions:
+    -
+      statement_id: sns_invoke
+      action: lambda:invokeFunction
+      principal: sns.amazonaws.com
+      # change this to point to your SNS topic
+      source_arn: arn:aws:sns:us-east-1:123456789012:lambda-chat
+  event_sources:
+    -
+      # change this to point to your SNS topic
+      arn: arn:aws:sns:us-east-1:123456789012:lambda-chat
+  test_data: input.json
+  
