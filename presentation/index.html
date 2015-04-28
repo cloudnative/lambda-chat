@@ -28,8 +28,9 @@
       li p { line-height: 1.25em; }
       .red { color: #fa0000; }
       .large { font-size: 2em; }
+      .orange { color: #f86000; }
       a, a > code {
-        color: rgb(249, 38, 114);
+        color: #f86000;
         text-decoration: none;
       }
       code {
@@ -160,7 +161,6 @@ class: center, middle, inverse
 # AWS Lambda
 
 Peter Sankauskas<br />
-[CloudNative](https://cloudnative.io/)
 
 ???
 
@@ -173,8 +173,63 @@ Terminal:
     screen -S demo
     screen -x demo
 
+Logout and Login:
+
+  - AWS Web Console - us-east-1 - Lambda
 ---
 template: inverse
+
+## Who is this guy?
+---
+layout: false
+## Peter Sankauskas
+
+[@pas256](https://twitter.com/pas256)
+
+Community
+
+  - Organize the Advanced AWS Meetup in SF
+
+  - AWS Community Hero
+
+Open source
+
+  - Wrote the EC2 inventory plugin for Ansible
+
+  - NetflixOSS Cloud Prize Winner
+
+Company
+
+  - Founder of Answers for AWS
+
+  - Founder &amp; CEO of CloudNative
+---
+## What does CloudNative give me?
+
+https://cloudnative.io/
+
+### An automated way of baking AMIs
+
+  - Integration with Jenkins, CircleCI, Teamcity &amp; custom webhooks
+
+  - Use your existing Ansible playbooks
+
+### A simple blue/green deployment model
+
+  - Uses Auto Scaling Groups to scale on demand
+
+  - No downtime deployment
+
+???
+
+Anyone here messed around with Jenkins for hours to get it building an AMI when tests pass?
+
+With us,
+
+---
+template: inverse
+
+## .orange[AWS Lambda]
 
 ## What is it and why should I be using it?
 ---
@@ -329,8 +384,11 @@ name: billing
 How is a GB-second calculated?
 
   - Duration: rounded up to the nearest 100ms
+
   - Memory: you choose the maximum memory your function needs
-    - 128MB to 1GB
+
+    - from 128MB to 1GB
+
     - in increments of 64MB
 
 
@@ -463,7 +521,7 @@ E.g.
   - Read/write objects from/to an S3 bucket
   - Write items to a DynamoDB table
 
-### Invocation Permissions (Push model)
+### Invocation Permissions
 
 ```json
 {
@@ -586,11 +644,14 @@ The config is a YAML file containing all the details
 ## Kappa Kinesis config file
 
 ```bash
+# Change the profile and region to suit your application
 profile: personal
 region: us-east-1
 iam:
-  role_name: KinesisSampleRole
-  role_policy: AWSLambdaKinesisExecutionRole
+  policy:
+    name: AWSLambdaKinesisExecutionRole
+  role:
+    name: KinesisSampleRole
 lambda:
   name: KinesisSample
   zipfile_name: KinesisSample.zip
@@ -601,7 +662,10 @@ lambda:
   memory_size: 128
   timeout: 3
   event_sources:
-    - arn: arn:aws:kinesis:us-east-1:084307701560:stream/lambdastream
+    -
+      # You need to change this arn to point to your own kinesis
+      # stream that you have created separately.
+      arn: arn:aws:kinesis:us-east-1:084307701560:stream/lambdastream
       starting_position: TRIM_HORIZON
       batch_size: 100
   test_data: input.json
@@ -633,23 +697,73 @@ template: inverse
 ---
 ## Goal
 
-Create a dynamic website without EC2
+To create a dynamic website without EC2
 
-## Result
+  - No servers
 
-### Lambda Chat
+  - No ELBs
+
+  - No security groups
+---
+## Inspiration
+
+
+.center[![Building Dynamic Dashboards Using Lambda and DynamoDB Streams: Part 1](imgs/dynamic-dashboards.png)]
+
+.footnote[https://medium.com/aws-activate-startup-blog/building-dynamic-dashboards-using-lambda-and-dynamodb-streams-part-1-217e2318ae17]
+
+---
+
+## Vote App
+
+http://voteapp.s3-website-us-east-1.amazonaws.com/
+
+---
+## Lambda Chat
 
 A simple chat application using AWS Lambda, SNS, DynamoDB and S3.
 
 ---
-name: lambda-chat-demo
-class: middle, center
+## Lambda Chat
 
-Interactive Demo
+A simple chat application using AWS Lambda, SNS, DynamoDB and S3.
 
-## [`http://bit.ly/lambda-chat`](http://bit.ly/lambda-chat)
+  - Host the HTML, CSS and JavaScript on S3
 
-<small>Pray to the demo gods</small>
+  - Each chat message is an SNS message
+
+  - Use AWS Lambda to process the chat messages
+
+  - Use DynamoDB as the data store
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+
+Use Web Identity Federation to issue temporary AWS credentials
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+
+Use Web Identity Federation to issue temporary AWS credentials
+
+### 2. How do we read the data back out?
+---
+## Challenges
+
+### 1. How do we send SNS messages from Javascript?
+
+Use Web Identity Federation to issue temporary AWS credentials
+
+### 2. How do we read the data back out?
+
+Store the resulting JSON in S3, and have the Javascript poll and update the UI
+
 ---
 background-image: url(imgs/lambda-chat.png)
 ???
@@ -664,6 +778,21 @@ background-image: url(imgs/lambda-chat.png)
 8. The process of adding a new chat message to the DynamoDB table triggers another Lambda function. This requires the currently-in-preview DynamoDB Streams feature. This second Lambda function reads the last 20 messages from DynamoDB, and...
 9. Writes them to an S3 object in JSON format
 10. The website polls the S3 object every second, and updates the chat box with any new messages it finds.
+---
+name: lambda-chat-demo
+class: middle, center
+
+Interactive Demo
+
+## [`http://bit.ly/lambda-chat`](http://bit.ly/lambda-chat)
+
+<small>Pray to the demo gods</small>
+
+???
+
+Remember to show
+  - The `data.json` file
+  - The logs from AWS web console
 ---
 ### SNS to DynamoDB table
 ```javascript
@@ -741,23 +870,58 @@ exports.handler = function(event, context) {
 
 };```
 ---
+## Lambda Chat is open sourced
 
-# SNS Messages
+https://github.com/cloudnative/lambda-chat
 
-  - Auto Scaling can post events to SNS when instances are launched or terminated.
-  - GitHub can post repository events to SNS. "Settings" / "Webhooks &amp; Services"
-  - RDS (instance, security and parameter group and snapshots) can post to SNS topics.
-  - S3 can post messages to SNS when a Reduced Redundancy Storage (RRS) object is lost.
-  - S3 can post messages to SNS when a new object is added to a bucket and when an existing object is updated.
-  - AWS CloudWatch Logs can trigger SNS messages.
+You will find
+
+  - All the code, including this presentation
+
+  - CloudFormation script (using [troposphere](https://github.com/cloudtools/troposphere)) for bringing up all the AWS resources
+
+  - Update script to push the website code to S3
+
+  - [Kappa](https://github.com/garnaat/kappa) configuration for both Lambda functions
+
+  - Easy clean up process
+---
+template: inverse
+
+## Final thoughts
+---
+## Limitations
+
+  - 100 concurrent, 1000 requests/s
+
+  - Event sources
+
+  - Your imagination
+---
+## What generates an SNS Message?
+
+  - .red[Auto Scaling] can post events to SNS when instances are launched or terminated.
+
+  - .red[GitHub] can post repository events to SNS. Go to: "Settings" / "Webhooks &amp; Services"
+
+  - An .red[RDS] Event Subscription can publish to SNS for instance, security group, parameter group and snapshots events.
+
+  - .red[S3] can publish messages to SNS when a Reduced Redundancy Storage (RRS) object is lost.
+
+  - .red[S3] can post messages to SNS when a new object is added to a bucket and when an existing object is updated.
+
+  - AWS .red[CloudWatch] can trigger SNS messages from Alarms.
+
+  - AWS .red[CloudTrail] can send an SNS messages when a new log file is ready.
 
 ---
 name: last-page
 template: inverse
 
-## That's all folks (for now)!
+## Thanks!
 
-Slideshow created using [remark](http://github.com/gnab/remark).
+## Questions?
+
     </textarea>
     <!--script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript"></script -->
     <script src="remark-latest.min.js" type="text/javascript"></script>
