@@ -10,6 +10,19 @@ var bucket = "lambda-chat";
 var keyname = "data.json";
 
 
+function escapeHtml(text) {
+  var map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+
 exports.handler = function(event, context) {
     console.log('Handle DynamoDB Streams event');
     console.log(event);
@@ -52,8 +65,8 @@ exports.handler = function(event, context) {
                 var message = {};
                 message['id'] = ii.message_id['S'];
                 message['name'] = ii.name['S'];
-                message['message'] = ii.message['S'];
-                message['channel'] = ii.message['S'];
+                message['message'] = escapeHtml(ii.message['S']);
+                message['channel'] = ii.channel['S'];
                 messageData.messages.push(message);
             }            
             next(null, JSON.stringify(messageData));
