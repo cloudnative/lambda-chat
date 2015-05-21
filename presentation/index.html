@@ -27,6 +27,7 @@
       }
       li p { line-height: 1.25em; }
       .red { color: #fa0000; }
+      .grey { color: #606060; }
       .large { font-size: 2em; }
       .orange { color: #f86000; }
       a, a > code {
@@ -200,9 +201,9 @@ Open source
 
 Company
 
-  - Founder of Answers for AWS
+  - Founder of Answers for AWS  <small class="grey">&lt;= Consulting</small>
 
-  - Founder &amp; CEO of CloudNative
+  - Founder &amp; CEO of CloudNative  <small class="grey">&lt;= SaaS</small>
 ---
 ## What does CloudNative give me?
 
@@ -622,7 +623,27 @@ dirs=$(./lambdash 'echo $NODE_PATH' | tr ':' '\n' | sort); echo $dirs
 
 ./lambdash 'for dir in '$dirs'; do echo $dir; ls -1 $dir; echo; done'
 ```
+---
+## Go in Lambda
 
+1. Compile Go app against Amazon Linux
+2. Use this Javascript handler
+
+```
+var child_process = require('child_process');
+
+exports.handler = function(event, context) {
+  var proc = spawn('./my-go-app', [ JSON.stringify(event) ], { stdio: 'inherit' });
+
+  proc.on('close', function(code){
+    if(code !== 0) {
+      return context.done(new Error("Process exited with non-zero status code"));
+    }
+
+    context.done(null);
+  });
+}
+```
 ---
 ## Kappa
 
@@ -718,6 +739,7 @@ To create a dynamic website without EC2
 
 http://voteapp.s3-website-us-east-1.amazonaws.com/
 
+.center[![Vote App](imgs/vote-app.png)]
 ---
 ## Lambda Chat
 
