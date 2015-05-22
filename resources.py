@@ -213,7 +213,7 @@ def generate_cf_template():
                             [
                                 "arn:aws:s3:::",
                                 {
-                                    "Ref": "website_bucket",
+                                    "Ref": "WebsiteS3Bucket",
                                 },
                                 "/*"
                             ]
