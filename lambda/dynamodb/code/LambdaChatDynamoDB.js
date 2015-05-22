@@ -49,7 +49,7 @@ exports.handler = function(event, context) {
                 },
                 "Limit": 20,
                 "ScanIndexForward": false
-            }            
+            }
             console.log("Scanning the table");
             ddb.query(params, next);
         },
@@ -64,11 +64,11 @@ exports.handler = function(event, context) {
                 ii = response.Items[i];
                 var message = {};
                 message['id'] = ii.message_id['S'];
-                message['name'] = ii.name['S'];
+                message['name'] = escapeHtml(ii.name['S']);
                 message['message'] = escapeHtml(ii.message['S']);
                 message['channel'] = ii.channel['S'];
                 messageData.messages.push(message);
-            }            
+            }
             next(null, JSON.stringify(messageData));
         },
         function savetos3(jsonstring, next) {
@@ -88,5 +88,5 @@ exports.handler = function(event, context) {
         }
         context.done(err, '');
     });
-    
+
 };
