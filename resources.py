@@ -46,15 +46,17 @@ from troposphere import GetAtt, Ref, Join
 import troposphere.iam as iam
 import troposphere.sns as sns
 import troposphere.s3 as s3
-from awacs.aws import Action, Allow, Policy, Statement, Principal, Condition, StringEquals, AWSPrincipal
+from awacs.aws import Action, Allow, Policy, Statement, Principal, Condition, StringEquals, AWSPrincipal, ConditionElement
 
+class ForAnyValueStringLike(ConditionElement):
+    condition = 'ForAnyValue:StringLike'
 
 def default_config():
     """
     Returns a dict with the default configuration
     """
     return {
-        'stack_name': 'Lambda-Chat',
+        'stack_name': 'lambda-chat',
         'tags': {
             'Name': 'Lambda Chat',
             'Creator': 'CloudNative'
@@ -98,6 +100,7 @@ def cf_params():
     return [
         ('GoogleOAuthClientID', config['google_oauth_client_id']),
         ('WebsiteS3BucketName', config['s3_bucket']),
+        ('IdentityPoolId', config['identity_pool_id']),
     ]
 
 
@@ -128,11 +131,21 @@ def generate_cf_template():
         ConstraintDescription="can contain only alphanumeric characters and dashes.",
     ))
 
+    identity_pool_id = t.add_parameter(Parameter(
+        "IdentityPoolId",
+        # AllowedPattern="[0-9]+-[a-z0-9]+.apps.googleusercontent.com",
+        Type="String",
+        Description="The Amazon Cognito Identity Poll",
+        ConstraintDescription=description
+    ))
+
     # The SNS topic the website will publish chat messages to
     website_sns_topic = t.add_resource(sns.Topic(
         'WebsiteSnsTopic',
         TopicName='lambda-chat',
-        DisplayName='Lambda Chat'
+        DisplayName='Lambda Chat',
+        Subscription=[
+        ]
     ))
     t.add_output(Output(
         "WebsiteSnsTopic",
@@ -149,13 +162,17 @@ def generate_cf_template():
                 Statement(
                     Effect=Allow,
                     Action=[Action("sts", "AssumeRoleWithWebIdentity")],
-                    Principal=Principal("Federated", "accounts.google.com"),
-                    Condition=Condition(
+                    Principal=Principal("Federated", "cognito-identity.amazonaws.com"),
+                    Condition=Condition([
                         StringEquals(
-                            "accounts.google.com:aud",
-                            Ref(google_oauth_client_id)
+                            "cognito-identity.amazonaws.com:aud",
+                            Ref(identity_pool_id)
+                        ),
+                        ForAnyValueStringLike(
+                            "cognito-identity.amazonaws.com:amr",
+                            "accounts.google.com"
                         )
-                    ),
+                    ]),
                 ),
             ],
         ),
@@ -287,7 +304,7 @@ if __name__ == '__main__':
     args = docopt(__doc__, version='Lambda Chat AWS Resources 0.2')
     config = load_config()
 
-    print_cf_template = args['cf'] or args['launch']
+    print_cf_template = args['cf'] or args['launch'] or args['update']
 
     try:
         if print_cf_template:

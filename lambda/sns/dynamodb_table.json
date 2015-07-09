@@ -1,5 +1,5 @@
 {
-    "TableName": "snslambda", 
+    "TableName": "lambdachat",
     "AttributeDefinitions": [
         {
             "AttributeName": "SnsTopicArn", 

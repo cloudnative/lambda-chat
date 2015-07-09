@@ -4,7 +4,7 @@
     {
       "Sid":"Stmt1",
       "Effect":"Allow",
-      "Action":["dynamodb:*"],
+      "Action":["dynamodb:PutItem"],
       "Resource":["arn:aws:dynamodb:us-east-1:658794617753:table/lambdachat"]
     },
     {
