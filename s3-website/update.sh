@@ -31,6 +31,7 @@ var website_iam_role_arn = '${website_iam_role_arn}';
 var sns_topic_arn = '${sns_topic_arn}';
 var data_key = '${data_key}';
 var region = '${region}';
+var identity_pool_id = '${identity_pool_id}';
 EOF
 
 echo "Uploading the website files to S3..."

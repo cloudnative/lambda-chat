@@ -78,11 +78,14 @@ function signOut() {
 
 
 function setAwsConfig() {
-    AWS.config.region = region
-    AWS.config.credentials = new AWS.WebIdentityCredentials({
+    AWS.config.region = region;
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: identity_pool_id,
+        Logins: {
+            'accounts.google.com': webIdentityToken
+        },
         RoleArn: website_iam_role_arn,
         RoleSessionName: 'lambda-chat',
-        WebIdentityToken: webIdentityToken
     });
 
     // Also create an SNS
