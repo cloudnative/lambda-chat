@@ -1,7 +1,7 @@
 console.log('Loading event');
 var aws = require('aws-sdk');
 var ddb = new aws.DynamoDB(
-    {endpoint: 'https://preview-dynamodb.us-east-1.amazonaws.com/',
+    {endpoint: 'https://dynamodb.us-west-2.amazonaws.com/',
      params: {TableName: 'lambdachat'}});
  
 exports.handler = function(event, context) {

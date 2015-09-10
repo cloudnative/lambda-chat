@@ -24,7 +24,7 @@ eval $(parse_yaml ./config.yml)
 echo "Configuration loaded"
 
 echo "Uploading the presentation files to S3..."
-aws s3 sync --region ${region} --exclude "*public*" --no-follow-symlinks presentation/ s3://${s3_bucket}/presentation/
+aws s3 sync --profile ${profile} --region ${region} --exclude "*public*" --no-follow-symlinks presentation/ s3://${s3_bucket}/presentation/
 
 echo "-- DONE --"
 echo "Go to: http://${s3_bucket}.s3-website-${region}.amazonaws.com/presentation/"
