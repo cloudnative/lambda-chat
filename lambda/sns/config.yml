@@ -1,7 +1,7 @@
 ---
 # change profile and region to meet your needs
-profile: cloudnative
-region: us-east-1
+profile: cloudnative-dev
+region: us-west-2
 iam:
   policy:
       description: A policy used with the Kappa SNS->DynamoDB example
@@ -25,10 +25,10 @@ lambda:
       action: lambda:invokeFunction
       principal: sns.amazonaws.com
       # change this to point to your SNS topic
-      source_arn: arn:aws:sns:us-east-1:123456789012:lambda-chat
+      source_arn: arn:aws:sns:us-west-2:860421987956:lambda-chat
   event_sources:
     -
       # change this to point to your SNS topic
-      arn: arn:aws:sns:us-east-1:123456789012:lambda-chat
+      arn: arn:aws:sns:us-west-2:860421987956:lambda-chat
   test_data: input.json
   

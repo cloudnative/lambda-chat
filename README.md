@@ -4,7 +4,7 @@ A chat application without servers - using only AWS Lambda, S3, DynamoDB and SNS
 
 ## Live Demo
 
-http://lambda-chat.s3-website-us-east-1.amazonaws.com/
+http://lambda-chat.s3-website-us-west-2.amazonaws.com/
 
 Please don't send a million messages through here - it does cost us money and we will turn it off if it is abused.
 

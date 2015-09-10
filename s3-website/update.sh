@@ -34,7 +34,7 @@ var region = '${region}';
 EOF
 
 echo "Uploading the website files to S3..."
-aws s3 sync --region ${region} public/ s3://${s3_bucket}/
+aws s3 sync --profile ${profile} --region ${region} public/ s3://${s3_bucket}/
 
 echo "-- DONE --"
 echo "Go to: http://${s3_bucket}.s3-website-${region}.amazonaws.com/"

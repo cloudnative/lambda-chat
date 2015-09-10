@@ -5,7 +5,7 @@
       "Sid":"Stmt1",
       "Effect":"Allow",
       "Action":["dynamodb:*"],
-      "Resource":["arn:aws:dynamodb:us-east-1:658794617753:table/lambdachat"]
+      "Resource":["arn:aws:dynamodb:us-west-2:860421987956:table/lambdachat"]
     },
     {
       "Sid":"Stmt2",

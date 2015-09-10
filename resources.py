@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 Script to generate a CloudFormation Template that brings up all of the AWS
 resources needed to run lambda-chat
@@ -8,15 +8,16 @@ This requires Python 2.7. To get the required libraries:
 
 Usage:
   resources.py cf
-  resources.py launch --region=<region>
-  resources.py update --region=<region>
-  resources.py delete --region=<region>
-  resources.py output --region=<region>
+  resources.py launch --region=<region> --profile=<profile>
+  resources.py update --region=<region> --profile=<profile>
+  resources.py delete --region=<region> --profile=<profile>
+  resources.py output --region=<region> --profile=<profile>
 
 Options:
   -h --help             Show this screen.
   --version             Show version.
   --region=<region>     The AWS region to use
+  --profile=<profile>   The AWS credential profile to use
 
 License:
   Copyright 2015 CloudNative, Inc.
@@ -297,7 +298,8 @@ if __name__ == '__main__':
                 sys.exit(1)
 
         # Get a connection to AWS CloudFormation in the given region
-        conn = cloudformation.connect_to_region(args['--region'])
+        conn = cloudformation.connect_to_region(
+            args['--region'], profile_name=args['--profile'])
 
         if (args['launch']):
             launch(args, config, conn, template)

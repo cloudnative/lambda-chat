@@ -2,7 +2,7 @@ console.log('Loading function');
 var async = require('async');
 var aws = require('aws-sdk');
 var ddb = new aws.DynamoDB(
-    {endpoint: "https://preview-dynamodb.us-east-1.amazonaws.com/",
+    {endpoint: "https://dynamodb.us-west-2.amazonaws.com/",
      params: {TableName: "lambdachat"}});
 var s3 = new aws.S3();
 // change bucket name to match your bucket name
@@ -25,8 +25,8 @@ function escapeHtml(text) {
 
 exports.handler = function(event, context) {
     console.log('Handle DynamoDB Streams event');
-    console.log(event);
-    var new_object = event.Records[0].Dynamodb;
+    console.log(JSON.stringify(event, null, 2));
+    var new_object = event.Records[0].dynamodb;
     var channel = "default";
     if ('channel' in new_object.NewImage) {
         channel = new_object.NewImage.channel.S;
@@ -41,7 +41,7 @@ exports.handler = function(event, context) {
                 "KeyConditions": {
                     "channel": {
                         "AttributeValueList": [{
-                            "S": "default"
+                            "S": channel
                         }],
                         "ComparisonOperator": "EQ"
                     }

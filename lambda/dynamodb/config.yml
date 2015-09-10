@@ -1,7 +1,7 @@
 ---
 # change profile and region to meet your needs
-profile: cloudnative
-region: us-east-1
+profile: cloudnative-dev
+region: us-west-2
 resources: resources.json
 iam:
   policy:
@@ -23,7 +23,7 @@ lambda:
     -
       # Change this to point to your DynamoDB stream.
       # Note that you must be in the DynamoDB Streams preview.
-      arn: arn:aws:dynamodb:us-east-1:123456789012:table/lambdachat/stream/b188ce53-44d7-34a6-aa72-c11eb0e80675-09223370606719090390-7b9f5f0c/
+      arn: arn:aws:dynamodb:us-west-2:860421987956:table/lambdachat/stream/2015-09-09T17:52:45.927
       batch_size: 1
       starting_position: LATEST
       enabled: true
