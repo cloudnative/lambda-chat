@@ -222,6 +222,7 @@ function, remove the event source mappings, and delete the IAM role.
 
 ## Reading, resources and other stuff
 
+ -  [blog post](https://cloudnative.io/blog/2015/05/lambda-chat/)
  -  [AWS Web Identity Federation playground](https://web-identity-federation-playground.s3.amazonaws.com/index.html)
  -  [Building Dynamic Dashboards Using Lambda and DynamoDB Streams: Part 1](https://medium.com/aws-activate-startup-blog/building-dynamic-dashboards-using-lambda-and-dynamodb-streams-part-1-217e2318ae17)
  -  [Kappa](https://github.com/garnaat/kappa)
